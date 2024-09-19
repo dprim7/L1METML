@@ -1,6 +1,7 @@
 import math
 import awkward as ak
 import numpy as np
+import pdb
 
 
 def read_input(inputfiles):
@@ -222,6 +223,7 @@ def MakePlots(trueXY, mlXY, puppiXY, path_out):
 
     # relative differences
     ax14 = fig1.add_subplot(2, 2, 4, sharex=ax12)
+    pdb.set_trace()
     ax14.hlines(bin_resolXYmagnitude_difference/truth_means, bin_edges[:-1], bin_edges[1:], lw=5, linestyles='solid')
     ax14.axhline(y=0, color='black', linestyle='-')
     ax14.set_ylim(min(bin_resolXYmagnitude_difference/truth_means)-.1, max(bin_resolXYmagnitude_difference/truth_means)+.1)
