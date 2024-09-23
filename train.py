@@ -209,46 +209,46 @@ def train_dataGenerator(args):
                                                     use_stochastic_rounding=False,
                                                     units=units)
 
-    # Check which model will be used (0 for L1MET Model, 1 for DeepMET Model)
-    if t_mode == 0:
-        keras_model.compile(optimizer='adam', loss=custom_loss, metrics=['mean_absolute_error', 'mean_squared_error'])
-        verbose = 1
-    elif t_mode == 1:
-        optimizer = optimizers.Adam(lr=1., clipnorm=1.)
-        keras_model.compile(loss=custom_loss, optimizer=optimizer,
-                            metrics=['mean_absolute_error', 'mean_squared_error'])
-        verbose = 1
+        # Check which model will be used (0 for L1MET Model, 1 for DeepMET Model)
+        if t_mode == 0:
+            keras_model.compile(optimizer='adam', loss=custom_loss, metrics=['mean_absolute_error', 'mean_squared_error'])
+            verbose = 1
+        elif t_mode == 1:
+            optimizer = optimizers.Adam(lr=1., clipnorm=1.)
+            keras_model.compile(loss=custom_loss, optimizer=optimizer,
+                                metrics=['mean_absolute_error', 'mean_squared_error'])
+            verbose = 1
 
-    # Run training
-    print(keras_model.summary())
+        # Run training
+        print(keras_model.summary())
 
-    start_time = time.time()  # check start time
-    history = keras_model.fit(trainGenerator,
-                              epochs=epochs,
-                              verbose=verbose,  # switch to 1 for more verbosity
-                              validation_data=validGenerator,
-                              callbacks=get_callbacks(path_out, len(trainGenerator), batch_size))
-    end_time = time.time()  # check end time
+        start_time = time.time()  # check start time
+        history = keras_model.fit(trainGenerator,
+                                epochs=epochs,
+                                verbose=verbose,  # switch to 1 for more verbosity
+                                validation_data=validGenerator,
+                                callbacks=get_callbacks(path_out, len(trainGenerator), batch_size))
+        end_time = time.time()  # check end time
 
-    predict_test = keras_model.predict(testGenerator) * normFac
-    all_PUPPI_pt = []
-    Yr_test = []
-    for (Xr, Yr) in tqdm.tqdm(testGenerator):
-        puppi_pt = np.sum(Xr[1], axis=1)
-        all_PUPPI_pt.append(puppi_pt)
-        Yr_test.append(Yr)
+        predict_test = keras_model.predict(testGenerator) * normFac
+        all_PUPPI_pt = []
+        Yr_test = []
+        for (Xr, Yr) in tqdm.tqdm(testGenerator):
+            puppi_pt = np.sum(Xr[1], axis=1)
+            all_PUPPI_pt.append(puppi_pt)
+            Yr_test.append(Yr)
 
-    PUPPI_pt = normFac * np.concatenate(all_PUPPI_pt)
-    Yr_test = normFac * np.concatenate(Yr_test)
+        PUPPI_pt = normFac * np.concatenate(all_PUPPI_pt)
+        Yr_test = normFac * np.concatenate(Yr_test)
 
-    test(Yr_test, predict_test, PUPPI_pt, path_out)
+        test(Yr_test, predict_test, PUPPI_pt, path_out)
 
-    fi = open("{}time.txt".format(path_out), 'w')
+        fi = open("{}time.txt".format(path_out), 'w')
 
-    fi.write("Working Time (s) : {}".format(end_time - start_time))
-    fi.write("Working Time (m) : {}".format((end_time - start_time)/60.))
+        fi.write("Working Time (s) : {}".format(end_time - start_time))
+        fi.write("Working Time (m) : {}".format((end_time - start_time)/60.))
 
-    fi.close()
+        fi.close()
 
 
 def train_loadAllData(args):
