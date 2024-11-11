@@ -1,2 +1,9 @@
 *~
 *.pyc
+*.h5
+*.npy
+*.npz
+*.pb
+*.pbtxt
+*.index
+*.log
