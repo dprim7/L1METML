@@ -546,7 +546,7 @@ def main():
     parser.add_argument('--edge-features', action='store', required=False, nargs='+', help='which edge features to use (i.e. dR, kT, z, m2)')
     parser.add_argument('--model-output', action='store', type=str, required=False, help='output path to save keras model')
     parser.add_argument('--normFac', action='store', type=int, default=1, required=False, help='Norm factor')
-
+    parser.add_argument('--feature_scaling', action='store', type=bool, default=False, required=False, help='Feature scaling applied in preProcessing')
     args = parser.parse_args()
     workflowType = args.workflowType
 

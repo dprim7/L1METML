@@ -27,10 +27,12 @@ def convertXY2PtPhi(arrayXY):
     return arrayPtPhi
 
 
-def preProcessing(A, normFac, EVT=None):
+def preProcessing(A, normFac, EVT=None, feature_scaling=False):
     """ pre-processing input """
-
-    norm = normFac
+    if feature_scaling:
+        norm = 1.0
+    else:
+        norm = normFac
 
     pt = A[:, :, 0:1] / norm
     px = A[:, :, 1:2] / norm
@@ -44,13 +46,29 @@ def preProcessing(A, normFac, EVT=None):
     px[np.where(np.abs(px > 500/norm))] = 0.
     py[np.where(np.abs(py > 500/norm))] = 0.
 
+
     inputs = np.concatenate((pt, eta, phi, puppi), axis=2)
     pxpy = np.concatenate((px, py), axis=2)
+
+    if feature_scaling:
+        # compute the mean and std of the input features
+        mean_inputs = np.mean(inputs, axis=(0, 1))  # Across samples and features
+        mean_pxpy = np.mean(pxpy, axis=(0, 1))
+
+        std_dev_inputs = np.std(inputs, axis=(0, 1))  # Across samples and features
+        std_dev_pxpy = np.std(pxpy, axis=(0, 1))
+
+        std_dev_inputs[std_dev_inputs == 0] = 1  # Avoid division by zero
+        std_dev_pxpy[std_dev_pxpy == 0] = 1
+
+        # Normalize the input features
+        inputs = (inputs - mean_inputs) / std_dev_inputs
+        pxpy = (pxpy - mean_pxpy) / std_dev_pxpy
 
     inputs_cat0 = A[:, :, 6]  # encoded PF pdgId
     inputs_cat1 = A[:, :, 7]  # encoded PF charge
 
-    return inputs, pxpy, inputs_cat0, inputs_cat1
+    return inputs, pxpy, inputs_cat0, inputs_cat1, mean_inputs, std_dev_inputs, mean_pxpy, std_dev_pxpy
 
 
 def MakePlots(trueXY, mlXY, puppiXY, path_out):
