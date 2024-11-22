@@ -169,14 +169,14 @@ def train_dataGenerator(args):
         trainGenerator = DataGenerator(list_files=train_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac)
         validGenerator = DataGenerator(list_files=valid_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac)
         testGenerator = DataGenerator(list_files=test_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac)
-        Xr_train, Yr_train = trainGenerator[0]  # this apparenly calls all the attributes, so that we can get the correct input dimensions (train_generator.emb_input_dim)
+        Xr_train, Yr_train, _ = trainGenerator[0]  # this apparenly calls all the attributes, so that we can get the correct input dimensions (train_generator.emb_input_dim) 
 
     else:
         trainGenerator = DataGenerator(list_files=train_filesList, batch_size=batch_size,normfac=normFac)
         validGenerator = DataGenerator(list_files=valid_filesList, batch_size=batch_size,normfac=normFac)
         testGenerator = DataGenerator(list_files=test_filesList, batch_size=batch_size,normfac=normFac)
-        Xr_train, Yr_train = trainGenerator[0]  # this apparenly calls all the attributes, so that we can get the correct input dimensions (train_generator.emb_input_dim)
-
+        Xr_train, Yr_train, _ = trainGenerator[0]  # this apparenly calls all the attributes, so that we can get the correct input dimensions (train_generator.emb_input_dim)
+        
     # Load training model
     if quantized is None:
         if model == 'dense_embedding':
@@ -244,6 +244,9 @@ def train_dataGenerator(args):
 
     end_time = time.time()  # check end time
 
+    #TODO: reverse feature scaling here
+    # need to know structure of predict_test to reverse feature scaling
+    # contingent on testing framework for the code
     predict_test = keras_model.predict(testGenerator) * normFac
     all_PUPPI_pt = []
     Yr_test = []
@@ -252,7 +255,7 @@ def train_dataGenerator(args):
         all_PUPPI_pt.append(puppi_pt)
         Yr_test.append(Yr)
     
-
+    #TODO: reverse feature scaling here
     PUPPI_pt = normFac * np.concatenate(all_PUPPI_pt)
     Yr_test = normFac * np.concatenate(Yr_test)
 
@@ -546,7 +549,7 @@ def main():
     parser.add_argument('--edge-features', action='store', required=False, nargs='+', help='which edge features to use (i.e. dR, kT, z, m2)')
     parser.add_argument('--model-output', action='store', type=str, required=False, help='output path to save keras model')
     parser.add_argument('--normFac', action='store', type=int, default=1, required=False, help='Norm factor')
-    parser.add_argument('--feature_scaling', action='store', type=bool, default=False, required=False, help='Feature scaling applied in preProcessing')
+    parser.add_argument('--feature-scaling', action='store', type=bool, default=False, required=False, help='Feature scaling applied in preProcessing')
     args = parser.parse_args()
     workflowType = args.workflowType
 

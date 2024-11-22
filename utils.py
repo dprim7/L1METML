@@ -33,6 +33,8 @@ def preProcessing(A, normFac, EVT=None, feature_scaling=False):
         norm = 1.0
     else:
         norm = normFac
+    # initialize the stats dictionary    
+    stats = {}
 
     pt = A[:, :, 0:1] / norm
     px = A[:, :, 1:2] / norm
@@ -65,10 +67,15 @@ def preProcessing(A, normFac, EVT=None, feature_scaling=False):
         inputs = (inputs - mean_inputs) / std_dev_inputs
         pxpy = (pxpy - mean_pxpy) / std_dev_pxpy
 
+        stats['mean_inputs'] = mean_inputs
+        stats['std_dev_inputs'] = std_dev_inputs
+        stats['mean_pxpy'] = mean_pxpy
+        stats['std_dev_pxpy'] = std_dev_pxpy
+
     inputs_cat0 = A[:, :, 6]  # encoded PF pdgId
     inputs_cat1 = A[:, :, 7]  # encoded PF charge
 
-    return inputs, pxpy, inputs_cat0, inputs_cat1, mean_inputs, std_dev_inputs, mean_pxpy, std_dev_pxpy
+    return inputs, pxpy, inputs_cat0, inputs_cat1, stats
 
 
 def MakePlots(trueXY, mlXY, puppiXY, path_out):

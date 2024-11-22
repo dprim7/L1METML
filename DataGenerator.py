@@ -14,7 +14,7 @@ class DataGenerator(tensorflow.keras.utils.Sequence):
     'Generates data for Keras'
 
     def __init__(self, list_files, batch_size=1024, n_dim=100, maxNPF=100, compute_ef=0,
-                 max_entry=100000000, edge_list=[], normfac=1):
+                 max_entry=100000000, edge_list=[], normfac=1, feature_scaling=False):
         'Initialization'
         self.n_features_pf = 6
         self.n_features_pf_cat = 2
@@ -30,6 +30,7 @@ class DataGenerator(tensorflow.keras.utils.Sequence):
         self.maxNPF = maxNPF
         self.compute_ef = compute_ef
         self.edge_list = edge_list
+        self.feature_scaling = feature_scaling
         running_total = 0
 
         self.h5files = []
@@ -129,7 +130,7 @@ class DataGenerator(tensorflow.keras.utils.Sequence):
 
         # process inputs
         Y = self.y / (-self.normFac)
-        Xi, Xp, Xc1, Xc2 = preProcessing(self.X, self.normFac)
+        Xi, Xp, Xc1, Xc2, stats = preProcessing(self.X, self.normFac)
 
         N = self.maxNPF
         Nr = N*(N-1)
@@ -177,7 +178,7 @@ class DataGenerator(tensorflow.keras.utils.Sequence):
             # Prepare training/val data
             Yr = Y
             Xr = [Xi, Xp] + Xc + [ef]
-            return Xr, Yr
+            return Xr, Yr, stats
 
         else:
             Xc = [Xc1, Xc2]
@@ -187,7 +188,7 @@ class DataGenerator(tensorflow.keras.utils.Sequence):
             # Prepare training/val data
             Yr = Y
             Xr = [Xi, Xp] + Xc
-            return Xr, Yr
+            return Xr, Yr, stats
 
     def __get_features_labels(self, ifile, entry_start, entry_stop):
         'Loads data from one file'
