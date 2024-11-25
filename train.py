@@ -136,6 +136,7 @@ def train_dataGenerator(args):
     compute_ef = args.compute_edge_feat
     edge_list = args.edge_features
     model_output = args.model_output
+    feature_scaling = args.feature_scaling
 
     # separate files into training, validation, and testing
     filesList = glob(os.path.join(inputPath, '*.root'))
@@ -166,15 +167,15 @@ def train_dataGenerator(args):
     if compute_ef == 1:
 
         # set up data generators; they perform h5 conversion if necessary and load in data batch by batch
-        trainGenerator = DataGenerator(list_files=train_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac)
-        validGenerator = DataGenerator(list_files=valid_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac)
-        testGenerator = DataGenerator(list_files=test_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac)
+        trainGenerator = DataGenerator(list_files=train_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac, feature_scaling=feature_scaling)
+        validGenerator = DataGenerator(list_files=valid_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac, feature_scaling=feature_scaling)
+        testGenerator = DataGenerator(list_files=test_filesList, batch_size=batch_size, maxNPF=maxNPF, compute_ef=1, edge_list=edge_list,normfac=normFac, feature_scaling=feature_scaling)
         Xr_train, Yr_train, _ = trainGenerator[0]  # this apparenly calls all the attributes, so that we can get the correct input dimensions (train_generator.emb_input_dim) 
 
     else:
-        trainGenerator = DataGenerator(list_files=train_filesList, batch_size=batch_size,normfac=normFac)
-        validGenerator = DataGenerator(list_files=valid_filesList, batch_size=batch_size,normfac=normFac)
-        testGenerator = DataGenerator(list_files=test_filesList, batch_size=batch_size,normfac=normFac)
+        trainGenerator = DataGenerator(list_files=train_filesList, batch_size=batch_size,normfac=normFac, feature_scaling=feature_scaling)
+        validGenerator = DataGenerator(list_files=valid_filesList, batch_size=batch_size,normfac=normFac, feature_scaling=feature_scaling)
+        testGenerator = DataGenerator(list_files=test_filesList, batch_size=batch_size,normfac=normFac, feature_scaling=feature_scaling)
         Xr_train, Yr_train, _ = trainGenerator[0]  # this apparenly calls all the attributes, so that we can get the correct input dimensions (train_generator.emb_input_dim)
         
     # Load training model
@@ -247,17 +248,27 @@ def train_dataGenerator(args):
     #TODO: reverse feature scaling here
     # need to know structure of predict_test to reverse feature scaling
     # contingent on testing framework for the code
+    # trying version where prepdict_test[0] is used, assumes mean
+    # and st_dev are equal between batches
     predict_test = keras_model.predict(testGenerator) * normFac
+    _,_, stats = testGenerator[0]
+    print(stats)
+    print(predict_test)
     all_PUPPI_pt = []
     Yr_test = []
     for (Xr, Yr) in tqdm.tqdm(testGenerator):
         puppi_pt = np.sum(Xr[1], axis=1)
         all_PUPPI_pt.append(puppi_pt)
         Yr_test.append(Yr)
-    
+
     #TODO: reverse feature scaling here
     PUPPI_pt = normFac * np.concatenate(all_PUPPI_pt)
     Yr_test = normFac * np.concatenate(Yr_test)
+    print(Yr_test)
+    print(PUPPI_pt) 
+    #if feature_scaling:
+
+
 
     test(Yr_test, predict_test, PUPPI_pt, path_out)
 

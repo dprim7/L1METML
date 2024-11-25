@@ -130,7 +130,7 @@ class DataGenerator(tensorflow.keras.utils.Sequence):
 
         # process inputs
         Y = self.y / (-self.normFac)
-        Xi, Xp, Xc1, Xc2, stats = preProcessing(self.X, self.normFac)
+        Xi, Xp, Xc1, Xc2, stats = preProcessing(self.X, self.normFac, self.feature_scaling)
 
         N = self.maxNPF
         Nr = N*(N-1)
