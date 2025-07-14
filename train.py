@@ -227,11 +227,7 @@ def train_dataGenerator_from_config(config: Config):
     edge_list = config.get("data.edge_features", [])
 
     # File handling
-    preprocessed = config.get("data.preprocessed", False)
-    if preprocessed:
-        filesList = glob(os.path.join(inputPath, "*.h5"))
-    else:
-        filesList = glob(os.path.join(inputPath, "*.root"))
+    filesList = glob(os.path.join(inputPath, "*.h5"))
     filesList.sort(reverse=True)
     random.shuffle(filesList)
 
@@ -929,7 +925,6 @@ def main():
         action="store",
         type=int,
         required=False,
-        default=100,
         help="number of epochs to train for",
     )
     parser.add_argument(
@@ -937,7 +932,6 @@ def main():
         action="store",
         type=int,
         required=False,
-        default=1024,
         help="batch size",
     )
     parser.add_argument(
@@ -976,7 +970,6 @@ def main():
         action="store",
         type=int,
         required=False,
-        default=100,
         help="maximum number of PUPPI candidates",
     )
     parser.add_argument(
@@ -997,7 +990,6 @@ def main():
         "--normFac",
         action="store",
         type=int,
-        default=1,
         required=False,
         help="Norm factor",
     )
@@ -1009,7 +1001,6 @@ def main():
     parser.add_argument(
         "--symmetry-weight",
         type=float,
-        default=1.0,
         help="Weight for symmetry penalty term (default: 1.0)",
     )
     args = parser.parse_args()
