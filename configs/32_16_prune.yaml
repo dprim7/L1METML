@@ -1,8 +1,11 @@
 callbacks:
-  cyclical_lr:
-    base_lr: 0.0003
-    max_lr: 0.001
-    mode: triangular2
+  learning_rate:
+    type: cosine_decay
+    initial_lr: 0.003
+    decay_steps: 10000
+    alpha: 0.0001
+    warmup_target: 0.003 #set none if not using warmup
+    warmup_steps: 1000
   early_stopping:
     monitor: val_loss
     patience: 10
@@ -24,7 +27,7 @@ data:
 loss:
   symmetry_weight: 1.0
   use_symmetry: false
-  mse_weight: 5.0
+  mse_weight: 2.0
   use_mae: true
   mae_weight: 2.0
 model:
