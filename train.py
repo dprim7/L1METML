@@ -30,8 +30,7 @@ from DataGenerator import DataGenerator
 from loss import custom_loss_wrapper
 from models import mlp_mixer_embedding, dense_embedding, dense_embedding_quantized, graph_embedding
 from pruning.utils import apply_model_pruning, get_pruning_callbacks, get_pruning_config
-from utils import convertXY2PtPhi, preProcessing, read_input
-from plotting import generate_all_plots, MakeEdgeHist
+from utils import MakePlots, convertXY2PtPhi, preProcessing, read_input
 from Write_MET_binned_histogram import (
     MET_binned_predict_mean_opaque,
     MET_rel_error_opaque,
@@ -415,6 +414,24 @@ def train_dataGenerator_from_config(config: Config):
     # train_laodAllData not implemented for config, outdated
 
 
+def MakeEdgeHist(
+    edge_feat, xname, outputname, nbins=1000, density=False, yname="# of edges"
+):
+    plt.style.use(hep.style.CMS)
+    plt.figure(figsize=(10, 8))
+    plt.hist(
+        edge_feat,
+        bins=nbins,
+        density=density,
+        histtype="step",
+        facecolor="k",
+        label="Truth",
+    )
+    plt.xlabel(xname)
+    plt.ylabel(yname)
+    plt.savefig(outputname)
+    plt.close()
+
 
 def deltaR_calc(eta1, phi1, eta2, phi2):
     """calculate deltaR"""
@@ -510,14 +527,43 @@ def get_callbacks(path_out, sample_size, batch_size):
 
 
 def test(Yr_test, predict_test, PUPPI_pt, path_out):
-    """
-    Generate all post-training plots using consolidated plotting module.
-    
-    This function now uses the consolidated plotting.py module instead of
-    calling scattered plotting functions from multiple files.
-    """
-    # Use the new consolidated plotting function
-    generate_all_plots(Yr_test, predict_test, PUPPI_pt, path_out)
+
+    MakePlots(Yr_test, predict_test, PUPPI_pt, path_out=path_out)
+
+    Yr_test = convertXY2PtPhi(Yr_test)
+    predict_test = convertXY2PtPhi(predict_test)
+    PUPPI_pt = convertXY2PtPhi(PUPPI_pt)
+
+    extract_result(predict_test, Yr_test, path_out, "TTbar", "ML")
+    extract_result(PUPPI_pt, Yr_test, path_out, "TTbar", "PU")
+
+    MET_rel_error_opaque(
+        predict_test[:, 0],
+        PUPPI_pt[:, 0],
+        Yr_test[:, 0],
+        name="" + path_out + "rel_error_opaque.png",
+    )
+    MET_binned_predict_mean_opaque(
+        predict_test[:, 0],
+        PUPPI_pt[:, 0],
+        Yr_test[:, 0],
+        20,
+        0,
+        500,
+        0,
+        ".",
+        name="" + path_out + "PrVSGen.png",
+    )
+
+    Phi_abs_error_opaque(
+        PUPPI_pt[:, 1], predict_test[:, 1], Yr_test[:, 1], name=path_out + "Phi_abs_err"
+    )
+    Pt_abs_error_opaque(
+        PUPPI_pt[:, 0],
+        predict_test[:, 0],
+        Yr_test[:, 0],
+        name=path_out + "Pt_abs_error",
+    )
 
 
 def train_dataGenerator(args):
